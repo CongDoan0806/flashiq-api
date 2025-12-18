@@ -1,0 +1,98 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          description: URL to avatar image
+    
+    Set:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        owner_id:
+          type: string
+          format: uuid
+        is_public:
+          type: boolean
+        view_count:
+          type: integer
+          default: 0
+        clone_count:
+          type: integer
+          default: 0
+        card_count:
+          type: integer
+          description: Calculated field from backend
+        created_at:
+          type: string
+          format: date-time
+          
+    Card:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        set_id:
+          type: string
+          format: uuid
+        term:
+          type: string
+        definition:
+          type: string
+        example:
+          type: string
+        image_url:
+          type: string
+
+    StudyProgress:
+      type: object
+      properties:
+        id:
+          type: string
+        user_id:
+          type: string
+        card_id:
+          type: string
+        score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: Learning score (0 to 1)
+        last_reviewed:
+          type: string
+          format: date-time
+
+
+  
+
+  
+
+  
+
+ 
+
+  

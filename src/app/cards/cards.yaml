@@ -1,0 +1,105 @@
+paths:
+  /sets/{id}/cards:
+    get:
+      tags:
+        - Cards
+      summary: Get all cards in a Set (For Study B.01)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of cards
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+
+    post:
+      tags:
+        - Cards
+      summary: Add single card to Set (A.03)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Card'
+      responses:
+        '201':
+          description: Card created
+
+  /sets/{id}/cards/bulk:
+    post:
+      tags:
+        - Cards
+      summary: Bulk Import Cards (A.05)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Card'
+      responses:
+        '201':
+          description: Multiple cards created
+
+  /cards/{cardId}:
+    put:
+      tags:
+        - Cards
+      summary: Update a Card (A.03)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: cardId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Card'
+      responses:
+        '200':
+          description: Card updated
+
+    delete:
+      tags:
+        - Cards
+      summary: Delete a Card (A.03)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: cardId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Card deleted
