@@ -2,7 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 import routes from './routes';
 import dotenv from 'dotenv';
-import { apiLimiter } from './middlewares/rateLimiter';
+import { apiLimiter } from './middlewares/rateLimiter.middleware';
 import { specs } from './docs/swagger';
 
 const app = express();
