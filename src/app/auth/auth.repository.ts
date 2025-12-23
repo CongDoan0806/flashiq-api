@@ -49,3 +49,17 @@ export const markEmailAsVerified = async (userId: string) => {
     },
   });
 };
+
+export const updateVerifyToken = async (
+  userId: string,
+  token: string,
+  expiry: Date
+) => {
+  return await prisma.user.update({
+    where: { id: userId },
+    data: {
+      emailVerifyToken: token,
+      emailVerifyExpiry: expiry,
+    },
+  });
+};

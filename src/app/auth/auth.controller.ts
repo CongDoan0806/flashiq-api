@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
-import { createUser, verifyEmailService } from './auth.service';
+import {
+  createUser,
+  verifyEmailService,
+  resendVerificationEmail as resendVerificationEmailService,
+} from './auth.service';
 import { RegisterDto } from './auth.dto';
 import { sendVerifyEmail } from '../../utils/mail';
 import { prisma } from '../../utils/prisma';
@@ -77,6 +81,34 @@ export const verifyEmail = async (req: Request, res: Response) => {
     }
     if (error.message === 'TOKEN_EXPIRED') {
       return res.status(400).json({ message: 'Token has expired' });
+    }
+
+    return res.status(500).json({
+      message: 'Internal server error',
+    });
+  }
+};
+
+export const resendVerificationEmail = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    const { emailVerifyToken, user } =
+      await resendVerificationEmailService(email);
+
+    await sendVerifyEmail(user.email, user.username, emailVerifyToken);
+
+    return res.json({
+      message: 'Verification email sent successfully',
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      if (error.message === 'User not found') {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      if (error.message === 'Email already verified') {
+        return res.status(400).json({ message: 'Email already verified' });
+      }
     }
 
     return res.status(500).json({

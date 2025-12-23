@@ -3,6 +3,7 @@ import {
   createUser as createNewUser,
   findUserByVerifyToken,
   markEmailAsVerified,
+  updateVerifyToken,
 } from './auth.repository';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
@@ -46,4 +47,23 @@ export const verifyEmailService = async (token: string) => {
   await markEmailAsVerified(user.id);
 
   return { success: true };
+};
+
+export const resendVerificationEmail = async (email: string) => {
+  const user = await findByEmail(email);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (user.isEmailVerified) {
+    throw new Error('Email already verified');
+  }
+
+  const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+  const emailVerifyExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+  await updateVerifyToken(user.id, emailVerifyToken, emailVerifyExpiry);
+
+  return { emailVerifyToken, user };
 };
