@@ -7,7 +7,7 @@ import {
 } from './auth.repository';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+import { ENV } from '../../config/env';
 
 export const createUser = async (
   email: string,
@@ -18,10 +18,12 @@ export const createUser = async (
   if (existingUser) {
     throw new Error('Email already exists');
   }
-  const salt = await bcrypt.genSalt(SALT_ROUNDS);
+  const salt = await bcrypt.genSalt(ENV.BCRYPT_SALT_ROUNDS);
   const hashedPassword = await bcrypt.hash(password, salt);
   const emailVerifyToken = crypto.randomBytes(32).toString('hex');
-  const emailVerifyExpiry = new Date(Date.now() + 15 * 60 * 1000);
+  const emailVerifyExpiry = new Date(
+    Date.now() + ENV.EMAIL_VERIFY_EXPIRE_MINUTES * 60 * 1000
+  );
   const user = await createNewUser(
     email,
     hashedPassword,
