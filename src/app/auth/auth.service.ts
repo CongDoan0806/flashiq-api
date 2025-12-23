@@ -1,0 +1,71 @@
+import {
+  findByEmail,
+  createUser as createNewUser,
+  findUserByVerifyToken,
+  markEmailAsVerified,
+  updateVerifyToken,
+} from './auth.repository';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
+import { ENV } from '../../config/env';
+
+export const createUser = async (
+  email: string,
+  password: string,
+  name: string
+) => {
+  const existingUser = await findByEmail(email);
+  if (existingUser) {
+    throw new Error('Email already exists');
+  }
+  const salt = await bcrypt.genSalt(ENV.BCRYPT_SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+  const emailVerifyExpiry = new Date(
+    Date.now() + ENV.EMAIL_VERIFY_EXPIRE_MINUTES * 60 * 1000
+  );
+  const user = await createNewUser(
+    email,
+    hashedPassword,
+    name,
+    salt,
+    emailVerifyToken,
+    emailVerifyExpiry
+  );
+  return user;
+};
+
+export const verifyEmailService = async (token: string) => {
+  const user = await findUserByVerifyToken(token);
+
+  if (!user) {
+    throw new Error('INVALID_TOKEN');
+  }
+
+  if (user.emailVerifyExpiry && user.emailVerifyExpiry < new Date()) {
+    throw new Error('TOKEN_EXPIRED');
+  }
+
+  await markEmailAsVerified(user.id);
+
+  return { success: true };
+};
+
+export const resendVerificationEmail = async (email: string) => {
+  const user = await findByEmail(email);
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  if (user.isEmailVerified) {
+    throw new Error('Email already verified');
+  }
+
+  const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+  const emailVerifyExpiry = new Date(Date.now() + 15 * 60 * 1000);
+
+  await updateVerifyToken(user.id, emailVerifyToken, emailVerifyExpiry);
+
+  return { emailVerifyToken, user };
+};
