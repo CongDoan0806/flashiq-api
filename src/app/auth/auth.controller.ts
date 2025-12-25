@@ -15,6 +15,7 @@ import {
   generateToken,
   validateRefreshToken,
 } from '../../utils/jwtHelper';
+import { TokenPayload } from './auth.type';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -176,7 +177,7 @@ export const refresh = async (req: Request, res: Response) => {
       });
     }
 
-    const payload = {
+    const payload: TokenPayload = {
       id: user.id,
       email: user.email,
     };
