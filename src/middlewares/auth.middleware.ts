@@ -22,7 +22,7 @@ export const authenticateAccessToken = (
     }
     jwt.verify(token, process.env.JWT_SECRET as string, (err) => {
       if (err) {
-        res.status(403).json({ message: 'Token invalid or expired' });
+        res.status(401).json({ message: 'Token invalid or expired' });
       }
       next();
     });
