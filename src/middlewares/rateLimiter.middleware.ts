@@ -1,12 +1,10 @@
 import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { createClient } from 'redis';
+import { ENV } from '../config/env';
 
 const redisClient = createClient({
-  socket: {
-    host: 'localhost',
-    port: 6379,
-  },
+  url: process.env.REDIS_URL,
 });
 
 redisClient.connect().catch(console.error);
@@ -16,7 +14,7 @@ export const authLimiter = rateLimit({
     sendCommand: (...args: string[]) => redisClient.sendCommand(args),
   }),
   windowMs: 15 * 60 * 1000,
-  max: Number.parseInt(process.env.MAX_AUTH_REQUEST || '5'),
+  max: Number.parseInt(ENV.MAX_AUTH_REQUEST || '5'),
   message: 'Too many login attempts, please try again later.',
   skipSuccessfulRequests: true,
   standardHeaders: true,
@@ -25,6 +23,6 @@ export const authLimiter = rateLimit({
 
 export const apiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: Number.parseInt(process.env.MAX_REQUEST || '20'),
+  max: Number.parseInt(ENV.MAX_REQUEST || '20'),
   message: 'API rate limit exceeded',
 });
