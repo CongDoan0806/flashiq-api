@@ -3,7 +3,7 @@ import {
   createManyCards,
   createCard,
   findCardById,
-  findAllCards,
+  findCardsBySetId,
   updateCardById,
   deleteCardById,
 } from './card.repository';
@@ -38,11 +38,11 @@ export const getCardById = async (cardId: string) => {
   return await findCardById(cardId);
 };
 
-export const getCardList = async (setId: string) => {
+export const getCardBySetId = async (setId: string) => {
   if (!setId) {
     throw new Error('Set id is required');
   }
-  return await findAllCards(setId);
+  return await findCardsBySetId(setId);
 };
 
 export const updateSingleCard = async (cardId: string, payload: CardDto) => {

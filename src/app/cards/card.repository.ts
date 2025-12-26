@@ -40,7 +40,7 @@ export const findCardById = async (cardId: string) => {
   });
 };
 
-export const findAllCards = async (setId: string) => {
+export const findCardsBySetId = async (setId: string) => {
   return await prisma.card.findMany({
     where: { setId },
   });

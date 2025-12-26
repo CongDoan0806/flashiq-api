@@ -4,7 +4,7 @@ import {
   createSingleCard,
   removeCardById,
   getCardById,
-  getCardList,
+  getCardBySetId,
   updateSingleCard,
 } from './card.service';
 
@@ -70,7 +70,7 @@ export const getSingleCardById = async (req: Request, res: Response) => {
 export const getAllCards = async (req: Request, res: Response) => {
   try {
     const setId = req.params.id;
-    const cards = await getCardList(setId);
+    const cards = await getCardBySetId(setId);
     return res.status(200).json({
       message:
         cards.length === 0 ? 'No cards found' : 'Get card list successfully',
