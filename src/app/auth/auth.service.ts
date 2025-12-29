@@ -19,7 +19,7 @@ export const createUser = async (
 ) => {
   const existingUser = await findByEmail(email);
   if (existingUser) {
-    throw new Error('Email already exists');
+    throw new BaseException(400, 'Email already exists');
   }
   const salt = await bcrypt.genSalt(ENV.BCRYPT_SALT_ROUNDS);
   const hashedPassword = await bcrypt.hash(password, salt);

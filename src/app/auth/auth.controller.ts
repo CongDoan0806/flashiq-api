@@ -55,22 +55,13 @@ export const register = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Registration error:', error);
 
-    if ((error as Error).message === 'Email already exists') {
-      return res.status(400).json({
-        message: 'Email already exists',
-      });
-    }
-
     if ((error as Error).message === 'Failed to send verification email') {
       return res.status(500).json({
         message: 'Failed to send verification email. Please try again.',
       });
+    } else {
+      throw error;
     }
-
-    return res.status(500).json({
-      message: 'Internal server error',
-      error: (error as Error).message,
-    });
   }
 };
 
