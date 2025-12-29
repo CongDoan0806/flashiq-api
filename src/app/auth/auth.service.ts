@@ -5,10 +5,12 @@ import {
   markEmailAsVerified,
   updateVerifyToken,
   findById,
+  removeUserToken,
 } from './auth.repository';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { ENV } from '../../config/env';
+import { BaseException } from '../../errors/BaseException';
 
 export const createUser = async (
   email: string,
@@ -89,4 +91,12 @@ export const findByEmailAndPassword = async (
 export const getUserById = async (id: string) => {
   const user = await findById(id);
   return user;
+};
+
+export const deleteTokenByUseId = async (userId: string) => {
+  try {
+    return await removeUserToken(userId);
+  } catch (error: any) {
+    throw new BaseException(500, error.message);
+  }
 };

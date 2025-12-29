@@ -20,7 +20,7 @@ paths:
                 required:
                   - message
                   - data
-paths:
+                  
   /users/{userId}/sets:
     get:
       tags:
