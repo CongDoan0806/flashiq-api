@@ -190,17 +190,20 @@ export const SetController = {
 
   async getTrending(req: Request, res: Response) {
     try {
+      const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const data = await SetService.getTrendingSets(limit);
+
+      const data = await SetService.getTrendingSets(page, limit);
 
       return res.status(200).json({
-        message: 'Popular sets retrieved successfully',
-        data,
+        message: 'Trending sets retrieved successfully',
+        ...data,
       });
     } catch (error) {
       const err = error as { status?: number; message?: string };
       return res.status(err.status || 500).json({
         message: err.message || 'Internal Server Error',
+        error: err.message,
       });
     }
   },

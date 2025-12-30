@@ -111,17 +111,29 @@ export const SetRepository = {
     return { sets, totalItems };
   },
 
-  async findTopViewed(limit: number) {
-    return await prisma.set.findMany({
-      orderBy: {
-        viewCount: 'desc',
-      },
-      take: limit,
-      include: {
-        _count: {
-          select: { cards: true },
+  async findTopViewed(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [totalItems, sets] = await prisma.$transaction([
+      prisma.set.count(),
+      prisma.set.findMany({
+        orderBy: {
+          viewCount: 'desc',
         },
-      },
-    });
+        skip: skip,
+        take: limit,
+        include: {
+          _count: {
+            select: { cards: true },
+          },
+        },
+      }),
+    ]);
+
+    return {
+      sets,
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+    };
   },
 };

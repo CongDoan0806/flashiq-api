@@ -112,13 +112,22 @@ export const SetService = {
     }
   },
 
-  async getTrendingSets(limit: number = 10) {
+  async getTrendingSets(page: number, limit: number) {
     try {
-      return await SetRepository.findTopViewed(limit);
+      const result = await SetRepository.findTopViewed(page, limit);
+      return {
+        sets: result.sets,
+        pagination: {
+          totalItems: result.totalItems,
+          totalPages: result.totalPages,
+          currentPage: page,
+          limit: limit,
+        },
+      };
     } catch (_error) {
       throw {
         status: 500,
-        message: 'Failed to retrieve popular sets',
+        message: 'Failed to retrieve trending sets',
       };
     }
   },
