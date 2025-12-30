@@ -5,17 +5,15 @@ import {
   resendVerificationEmail as resendVerificationEmailService,
   findByEmailAndPassword,
   getUserById,
-  deleteTokenByUseId,
+  removeRefreshToken,
 } from './auth.service';
 import { RegisterDto } from './auth.dto';
 import { sendVerifyEmail } from '../../utils/mail';
 import { prisma } from '../../utils/prisma';
 import {
-  extractPayloadFromAccessToken,
   extractPayloadFromRefreshToken,
   generateAccessToken,
   generateToken,
-  getAccessTokenFromHeader,
   validateRefreshToken,
 } from '../../utils/jwtHelper';
 import { TokenPayload } from './auth.type';
@@ -184,9 +182,9 @@ export const refresh = async (req: Request, res: Response) => {
 };
 
 export const logout = async (req: Request, res: Response) => {
-  const token = getAccessTokenFromHeader(req);
-  const userId = extractPayloadFromAccessToken(token).id;
-  await deleteTokenByUseId(userId);
+  const { refreshToken } = req.body;
+  validateRefreshToken(refreshToken);
+  await removeRefreshToken(refreshToken);
   return res.json({
     message: 'Logout successfully',
     data: [],
