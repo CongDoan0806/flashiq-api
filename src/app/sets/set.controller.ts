@@ -6,91 +6,79 @@ import {
 import { SetService } from './set.service';
 
 export const SetController = {
-  getUserId(req: Request) {
-    const token = getAccessTokenFromHeader(req);
-    return extractPayloadFromAccessToken(token)?.id;
-  },
-
   async create(req: Request, res: Response) {
-    try {
-      const ownerId = SetController.getUserId(req);
-      const data = await SetService.createSet({ ...req.body, ownerId });
-      return res
-        .status(201)
-        .json({ message: 'Created set successfully', data });
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      return res.status(err.status || 500).json({
-        message: err.message || 'Internal Server Error',
-      });
-    }
+    const token = getAccessTokenFromHeader(req);
+    const payload = extractPayloadFromAccessToken(token);
+
+    const createData = { ...req.body, ownerId: payload.id };
+    const data = await SetService.createSet(createData);
+
+    return res.status(201).json({
+      message: 'Created set successfully',
+      data: data,
+    });
   },
 
   async getSetByUser(req: Request, res: Response) {
-    try {
-      const currentUserId = SetController.getUserId(req);
-      const { userId } = req.params;
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+    const token = getAccessTokenFromHeader(req);
+    const payload = extractPayloadFromAccessToken(token);
+    const currentUserId = payload.id;
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
 
-      const result = await SetService.findByUserId(
-        currentUserId,
-        userId,
-        page,
-        limit
-      );
-      return res
-        .status(200)
-        .json({ message: 'Data retrieved successfully', ...result });
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      return res.status(err.status || 500).json({ message: err.message });
-    }
+    const result = await SetService.findByUserId(
+      userId,
+      currentUserId,
+      page,
+      limit
+    );
+    return res.status(200).json({
+      message: 'Data retrieved successfully',
+      data: result.sets,
+      pagination: {
+        totalItems: result.totalItems,
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        limit: limit,
+      },
+    });
   },
 
   async getById(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const includeCards = req.query.includeCards === 'true';
-      const currentUserId = SetController.getUserId(req);
+    const { id } = req.params;
+    const includeCards = req.query.includeCards === 'true';
+    const data = await SetService.findById(id, includeCards);
 
-      const data = await SetService.findById(id, includeCards, currentUserId);
-      return res.status(200).json(data);
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      return res.status(err.status || 500).json({ message: err.message });
-    }
+    return res.status(200).json({
+      message: 'Data retrieval successful',
+      data,
+    });
   },
 
   async updateSet(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const currentUserId = SetController.getUserId(req);
-      const data = await SetService.updateSet(id, currentUserId, req.body);
-      return res.status(200).json({ message: 'Updated successfully', data });
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      return res.status(err.status || 500).json({ message: err.message });
-    }
+    const { id } = req.params;
+    const token = getAccessTokenFromHeader(req);
+    const payload = extractPayloadFromAccessToken(token);
+    const currentUserId = payload.id;
+
+    const data = await SetService.updateSet(id, currentUserId, req.body);
+
+    return res.status(200).json({ message: 'Updated successfully', data });
   },
 
   async deleteSet(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const currentUserId = SetController.getUserId(req);
+    const { id } = req.params;
+    const token = getAccessTokenFromHeader(req);
+    const payload = extractPayloadFromAccessToken(token);
+    const currentUserId = payload.id;
 
-      if (!currentUserId)
-        return res.status(401).json({ message: 'Unauthorized' });
+    const deletedSet = await SetService.deleteSet(id, currentUserId);
 
-      const deletedSet = await SetService.deleteSet(id, currentUserId);
-      return res.status(200).json({
-        message: `Deleted the set ${deletedSet.title} successfully`,
-        data: null,
-      });
-    } catch (error: unknown) {
-      const err = error as { status?: number; message?: string };
-      return res.status(err.status || 500).json({ message: err.message });
-    }
+    return res.status(200).json({
+      message: `Deleted the set ${deletedSet.title} successfully`,
+      data: null,
+    });
   },
 
   async search(req: Request, res: Response) {

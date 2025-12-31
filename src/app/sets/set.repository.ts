@@ -2,19 +2,25 @@ import { CreateSetDto } from './set.dto';
 import { prisma } from '../../utils/prisma';
 
 export const SetRepository = {
-  async createSet(data: CreateSetDto & { ownerId: string }) {
-    return await prisma.set.create({
-      data: {
-        title: data.title,
-        description: data.description,
-        ownerId: data.ownerId,
-        isPublic: data.isPublic,
-      },
-    });
+  async createSet(data: CreateSetDto) {
+    try {
+      return await prisma.set.create({
+        data: {
+          title: data.title,
+          description: data.description,
+          ownerId: data.ownerId,
+          isPublic: data.isPublic,
+        },
+      });
+    } catch {
+      console.error('Error creating set');
+      throw new Error('Unable to create a new set');
+    }
   },
 
   async findByUserId(userId: string, page: number, limit: number) {
-    const skip = (page - 1) * limit;
+    try {
+      const skip = (page - 1) * limit;
 
       const [sets, totalItems] = await Promise.all([
         prisma.set.findMany({
@@ -61,6 +67,19 @@ export const SetRepository = {
     });
   },
 
+  async updateSet(id: string, data: Partial<CreateSetDto>) {
+    try {
+      return await prisma.set.update({
+        where: { id },
+        data: data,
+      });
+    } catch {
+      const err = new Error('Database update failed');
+      (err as { status?: number }).status = 500;
+      throw err;
+    }
+  },
+
   async incrementViewCount(id: string) {
     return await prisma.set.update({
       where: { id },
@@ -70,15 +89,14 @@ export const SetRepository = {
     });
   },
 
-  async updateSet(id: string, data: Partial<CreateSetDto>) {
-    return await prisma.set.update({
-      where: { id },
-      data: data,
-    });
-  },
-
   async deleteSet(id: string) {
-    return await prisma.set.delete({ where: { id } });
+    try {
+      return await prisma.set.delete({ where: { id } });
+    } catch {
+      const err = new Error('Database delete failed');
+      (err as { status?: number }).status = 500;
+      throw err;
+    }
   },
 
   async findByTitle(keyword: string, page: number, limit: number) {

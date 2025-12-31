@@ -4,88 +4,125 @@ import { CreateSetDto } from './set.dto';
 import { SetRepository } from './set.repository';
 
 export const SetService = {
-  async createSet(data: CreateSetDto & { ownerId: string }) {
-    return await SetRepository.createSet(data);
-  },
+  async createSet(data: CreateSetDto) {
+    try {
+      if (!data) {
+        throw new BaseException(400, 'Invalid data');
+      }
+      return await SetRepository.createSet(data);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
 
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
+  },
   async findByUserId(
+    userId: string,
     currentUserId: string,
-    targetUserId: string,
     page: number,
     limit: number
   ) {
-    if (currentUserId !== targetUserId) {
-      throw new BaseException(
-        403,
-        'You do not have permission to view this data'
-      );
-    }
-    const result = await SetRepository.findByUserId(targetUserId, page, limit);
-    const totalPages = Math.ceil(result.totalItems / limit);
-    return {
-      sets: result.sets,
-      totalItems: result.totalItems,
-      totalPages: totalPages,
-      currentPage: page,
-    };
-  },
-
-  async findById(
-    id: string,
-    includeCards: boolean = false,
-    currentUserId?: string
-  ) {
-    const set = await SetRepository.findById(id, includeCards);
-    if (!set) {
-      throw new BaseException(
-        404,
-        `Resource not found: Set with id ${id} does not exist`
-      );
-    }
-    const isOwner =
-      currentUserId && String(currentUserId) === String(set.ownerId);
-    if (!isOwner) {
-      try {
-        await SetRepository.incrementViewCount(id);
-        set.viewCount += 1;
-      } catch (error) {
-        console.error('Failed to increment view count:', error);
+    try {
+      if (currentUserId !== userId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to view this data'
+        );
       }
-    }
-    return new BaseSuccessResponse('Get the set of success', set);
-  },
 
+      return await SetRepository.findByUserId(userId, page, limit);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
+  },
+  async findById(id: string, includeCards: boolean = false) {
+    try {
+      const set = await SetRepository.findById(id, includeCards);
+      if (!set) {
+        throw new BaseException(404, 'Set not found');
+      }
+      return set;
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
+  },
   async updateSet(
     setId: string,
     currentUserId: string,
     data: Partial<CreateSetDto>
   ) {
-    const existingSet = await SetRepository.findById(setId, false);
-    if (!existingSet) {
-      throw new BaseException(404, 'Set not found');
-    }
-    if (existingSet.ownerId !== currentUserId) {
+    try {
+      const existingSet = await SetRepository.findById(setId, false);
+
+      if (!existingSet) {
+        throw new BaseException(404, 'Set not found');
+      }
+
+      if (existingSet.ownerId !== currentUserId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to update this set'
+        );
+      }
+      return await SetRepository.updateSet(setId, data);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
       throw new BaseException(
-        403,
-        'You do not have permission to update this set'
+        error?.status || 500,
+        error?.message || 'Internal server error'
       );
     }
-    return await SetRepository.updateSet(setId, data);
   },
 
   async deleteSet(setId: string, currentUserId: string) {
-    const existingSet = await SetRepository.findById(setId, false);
-    if (!existingSet) {
-      throw new BaseException(404, 'Set not found');
-    }
-    if (existingSet.ownerId !== currentUserId) {
+    try {
+      const existingSet = await SetRepository.findById(setId, false);
+      if (!currentUserId) {
+        throw new BaseException(401, 'Unauthorized');
+      }
+      if (!existingSet) {
+        throw new BaseException(404, 'Set not found');
+      }
+
+      if (existingSet.ownerId !== currentUserId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to delete this set'
+        );
+      }
+      return await SetRepository.deleteSet(setId);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
       throw new BaseException(
-        403,
-        'You do not have permission to delete this set'
+        error?.status || 500,
+        error?.message || 'Internal server error'
       );
     }
-    const deletedSet = await SetRepository.deleteSet(setId);
-    return deletedSet;
   },
 
   async searchSets(keyword: string, page: number, limit: number) {
@@ -120,8 +157,11 @@ export const SetService = {
           limit: limit,
         },
       };
-    } catch (_error) {
-      throw new BaseException(500, 'Failed to retrieve trending sets');
+    } catch (error: any) {
+      throw new BaseException(
+        error?.status || 500,
+        'Failed to retrieve trending sets'
+      );
     }
   },
 };
