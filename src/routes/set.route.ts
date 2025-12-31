@@ -14,6 +14,8 @@ import { getQuiz } from '../app/quiz/quiz.controller';
 
 const router = Router();
 
+router.get('/trending', SetController.getTrending);
+router.get('/search', SetController.search);
 router.post('/', validate(createSetSchema), SetController.create);
 router.get('/:id', SetController.getById);
 router.put('/:id', SetController.updateSet);
