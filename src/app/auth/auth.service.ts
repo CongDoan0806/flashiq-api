@@ -5,7 +5,7 @@ import {
   markEmailAsVerified,
   updateVerifyToken,
   findById,
-  removeUserToken,
+  removeSpecificToken,
 } from './auth.repository';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
@@ -93,9 +93,12 @@ export const getUserById = async (id: string) => {
   return user;
 };
 
-export const deleteTokenByUseId = async (userId: string) => {
+export const removeRefreshToken = async (refreshToken: string) => {
   try {
-    return await removeUserToken(userId);
+    if (!refreshToken) {
+      throw new BaseException(400, 'Refresh token is required');
+    }
+    return await removeSpecificToken(refreshToken);
   } catch (error: any) {
     throw new BaseException(500, error.message);
   }

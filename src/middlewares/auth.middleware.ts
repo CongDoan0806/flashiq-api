@@ -8,7 +8,7 @@ export const authenticateAccessToken = (
 ) => {
   const authHeader = req.headers['authorization'];
   if (!authHeader) {
-    res.status(401).json({
+    return res.status(401).json({
       message: 'Unauthenticated request',
       errors: ['Access token required'],
     });
@@ -22,7 +22,7 @@ export const authenticateAccessToken = (
     }
     jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
       if (err) {
-        res.status(401).json({ message: 'Token invalid or expired' });
+        return res.status(401).json({ message: 'Token invalid or expired' });
       }
       (req as any).user = decoded;
       next();

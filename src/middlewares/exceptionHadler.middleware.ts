@@ -18,7 +18,7 @@ export const globalExceptionHandler = (
 
   if (err instanceof JsonWebTokenError) {
     return res
-      .status(400)
+      .status(401)
       .json(new BaseErrorResponse('Invalid Token', [err.message]));
   }
 
