@@ -1,3 +1,4 @@
+import { Card } from '@prisma/client';
 import { prisma } from '../../utils/prisma';
 import { CardDto } from './card.dto';
 
@@ -48,7 +49,7 @@ export const findCardsBySetId = async (setId: string) => {
 
 export const updateCardById = async (
   cardId: string,
-  data: Partial<CardDto>
+  data: Partial<CardDto> | Card
 ) => {
   return prisma.card.update({
     where: { id: cardId },
