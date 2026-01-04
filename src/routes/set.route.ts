@@ -9,9 +9,13 @@ import {
 } from '../app/cards/card.controller';
 import { bulkCardSchema, singleCardSchema } from '../validations/card.schema';
 import { authenticateAccessToken } from '../middlewares/auth.middleware';
+import { getStudyRecords } from '../app/study_records/study_record.controller';
+import { getQuiz } from '../app/quiz/quiz.controller';
 
 const router = Router();
 
+router.get('/trending', SetController.getTrending);
+router.get('/search', SetController.search);
 router.post('/', validate(createSetSchema), SetController.create);
 router.get('/:id', SetController.getById);
 router.put('/:id', SetController.updateSet);
@@ -30,5 +34,9 @@ router.post(
   authenticateAccessToken,
   createCardController
 );
+
+router.get('/:id/study-records', authenticateAccessToken, getStudyRecords);
+
+router.get('/:id/quiz', getQuiz);
 
 export default router;

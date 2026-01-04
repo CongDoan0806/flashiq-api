@@ -23,3 +23,18 @@ export const bulkCardSchema = Joi.object({
   abortEarly: false,
   stripUnknown: true,
 });
+
+export const bulkUpdateCardsSchema = Joi.object({
+  setId: Joi.string().required().messages({
+    'any.required': 'Set id is required',
+    'string.empty': 'Set id cannot be empty',
+  }),
+
+  oldCards: Joi.array().required().default([]).messages({
+    'array.base': 'Old cards must be an array',
+  }),
+
+  newCards: Joi.array().required().default([]).messages({
+    'array.base': 'New cards must be an array',
+  }),
+}).required();
