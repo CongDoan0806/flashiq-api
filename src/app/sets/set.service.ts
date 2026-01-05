@@ -1,52 +1,167 @@
+import { BaseSuccessResponse } from '../../dto/SuccessResponse';
+import { BaseException } from '../../errors/BaseException';
 import { CreateSetDto } from './set.dto';
 import { SetRepository } from './set.repository';
 
 export const SetService = {
   async createSet(data: CreateSetDto) {
-    return await SetRepository.createSet(data);
+    try {
+      if (!data) {
+        throw new BaseException(400, 'Invalid data');
+      }
+      return await SetRepository.createSet(data);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
   },
-  async findByUserId(userId: string, page: number, limit: number) {
-    return await SetRepository.findByUserId(userId, page, limit);
+  async findByUserId(
+    userId: string,
+    currentUserId: string,
+    page: number,
+    limit: number
+  ) {
+    try {
+      if (currentUserId !== userId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to view this data'
+        );
+      }
+
+      return await SetRepository.findByUserId(userId, page, limit);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
   },
-  async findById(id: string, inclueCards: boolean = false) {
-    return await SetRepository.findById(id, inclueCards);
+  async findById(id: string, includeCards: boolean = false) {
+    try {
+      const set = await SetRepository.findById(id, includeCards);
+      if (!set) {
+        throw new BaseException(404, 'Set not found');
+      }
+      return set;
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
+    }
   },
   async updateSet(
     setId: string,
     currentUserId: string,
     data: Partial<CreateSetDto>
   ) {
-    const existingSet = await SetRepository.findById(setId, false);
+    try {
+      const existingSet = await SetRepository.findById(setId, false);
 
-    if (!existingSet) {
-      const err = new Error('Set not found');
-      (err as { status?: number }).status = 404;
-      throw err;
+      if (!existingSet) {
+        throw new BaseException(404, 'Set not found');
+      }
+
+      if (existingSet.ownerId !== currentUserId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to update this set'
+        );
+      }
+      return await SetRepository.updateSet(setId, data);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
     }
-
-    if (existingSet.ownerId !== currentUserId) {
-      const err = new Error('You do not have permission to update this set');
-      (err as { status?: number }).status = 403;
-      throw err;
-    }
-
-    return await SetRepository.updateSet(setId, data);
   },
 
   async deleteSet(setId: string, currentUserId: string) {
-    const existingSet = await SetRepository.findById(setId, false);
+    try {
+      const existingSet = await SetRepository.findById(setId, false);
+      if (!currentUserId) {
+        throw new BaseException(401, 'Unauthorized');
+      }
+      if (!existingSet) {
+        throw new BaseException(404, 'Set not found');
+      }
 
-    if (!existingSet) {
-      const err = new Error('Set not found');
-      (err as { status?: number }).status = 404;
-      throw err;
-    }
+      if (existingSet.ownerId !== currentUserId) {
+        throw new BaseException(
+          403,
+          'You do not have permission to delete this set'
+        );
+      }
+      return await SetRepository.deleteSet(setId);
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
 
-    if (existingSet.ownerId !== currentUserId) {
-      const err = new Error('You do not have permission to delete this set');
-      (err as { status?: number }).status = 403;
-      throw err;
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
+      );
     }
-    return await SetRepository.deleteSet(setId);
+  },
+
+  async searchSets(keyword: string, page: number, limit: number) {
+    if (!keyword || keyword.trim() === '') {
+      return new BaseSuccessResponse('No sets found matching your search', {
+        sets: [],
+        pagination: { totalItems: 0, totalPages: 0, currentPage: page, limit },
+      });
+    }
+    const { sets, totalItems } = await SetRepository.findByTitle(
+      keyword,
+      page,
+      limit
+    );
+    const totalPages = Math.ceil(totalItems / limit);
+    const data = {
+      sets,
+      pagination: { totalItems, totalPages, currentPage: page, limit },
+    };
+    return new BaseSuccessResponse('Sets retrieved successfully', data);
+  },
+
+  async getTrendingSets(page: number, limit: number) {
+    try {
+      const result = await SetRepository.findTopViewed(page, limit);
+      return {
+        sets: result.sets,
+        pagination: {
+          totalItems: result.totalItems,
+          totalPages: result.totalPages,
+          currentPage: page,
+          limit: limit,
+        },
+      };
+    } catch (error: any) {
+      throw new BaseException(
+        error?.status || 500,
+        'Failed to retrieve trending sets'
+      );
+    }
   },
 };

@@ -71,3 +71,9 @@ export const findById = async (id: string) => {
     },
   });
 };
+
+export const removeSpecificToken = async (refreshToken: string) => {
+  return await prisma.refreshToken.delete({
+    where: { refreshToken: refreshToken },
+  });
+};

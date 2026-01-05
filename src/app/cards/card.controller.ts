@@ -6,7 +6,9 @@ import {
   getCardById,
   getCardBySetId,
   updateSingleCard,
+  bulkUpdateCardsBySetId,
 } from './card.service';
+import { BaseSuccessResponse } from '../../dto/SuccessResponse';
 
 export const createBulkCardsController = async (
   req: Request,
@@ -117,4 +119,11 @@ export const deleteCard = async (req: Request, res: Response) => {
       errors: error.message === 'Card not found' ? [] : [error.message],
     });
   }
+};
+
+export const bulkUpdateCards = async (req: Request, res: Response) => {
+  const { setId, oldCards, newCards } = req.body;
+  await bulkUpdateCardsBySetId(setId, oldCards, newCards);
+  const response = new BaseSuccessResponse('Update cards successfully', null);
+  return res.json(response);
 };
