@@ -11,6 +11,7 @@ import { bulkCardSchema, singleCardSchema } from '../validations/card.schema';
 import { authenticateAccessToken } from '../middlewares/auth.middleware';
 import { getStudyRecords } from '../app/study_records/study_record.controller';
 import { getQuiz } from '../app/quiz/quiz.controller';
+import { generateStory } from '../app/ai_tools/ai.controller';
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.post(
 router.get('/:id/study-records', authenticateAccessToken, getStudyRecords);
 
 router.get('/:id/quiz', getQuiz);
+router.get('/:id/generate-story', authenticateAccessToken, generateStory);
 
 export default router;
