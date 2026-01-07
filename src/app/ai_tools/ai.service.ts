@@ -8,14 +8,22 @@ import { buildStoryPrompt } from './ai.prompt';
 
 const genAI = new GoogleGenerativeAI(ENV.GEMINI_API_KEY);
 
-export const generateText = async (setId: string) => {
+export const generateText = async (
+  setId: string,
+  storyLength: number,
+  style: string
+) => {
   try {
     const cards = await findCardsBySetId(setId);
     if (!cards || cards.length === 0) {
       throw new BaseException(400, 'Cards do not exist for this set');
     }
     const model = genAI.getGenerativeModel({ model: ENV.GEMINI_MODEL });
-    const prompt = buildStoryPrompt(cards.map((card) => card.term));
+    const prompt = buildStoryPrompt(
+      cards.map((card) => card.term),
+      storyLength,
+      style
+    );
     const result = await model.generateContent(prompt);
     const response = result.response;
     const story = response.text();
