@@ -105,3 +105,25 @@ export const findStudyRecordScore = async (userId: string, cardId: string) => {
     },
   });
 };
+
+export const getBatch = async (limit: number, afterId?: string) => {
+  return prisma.studyRecord.findMany({
+    take: limit,
+    ...(afterId && {
+      skip: 1,
+      cursor: { id: afterId },
+    }),
+    orderBy: {
+      id: 'asc',
+    },
+  });
+};
+
+export const updateScoreById = async (id: string, newScore: number) => {
+  return prisma.studyRecord.update({
+    where: { id },
+    data: {
+      score: newScore,
+    },
+  });
+};
