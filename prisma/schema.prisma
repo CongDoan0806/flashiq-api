@@ -75,3 +75,20 @@ model StudyRecord {
 
   @@unique([userId, cardId])
 }
+
+enum Permission {
+  VIEW
+  EDIT
+}
+
+model Access {
+  id           String     @id @default(uuid())
+  setId        String
+  userId       String
+  permission   Permission @default(VIEW)
+  set          Set        @relation(fields: [setId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([setId, userId])
+}
+

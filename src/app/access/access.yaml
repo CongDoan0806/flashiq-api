@@ -1,0 +1,48 @@
+paths:
+  /sets/{id}/access:
+    get:
+      tags: 
+        - Access
+      summary: Get access list for a Set
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of users with access
+          content:
+             application/json:
+               schema:
+                 type: array
+                 items:
+                   type: object
+                   properties:
+                      user_id: { type: string }
+                      permission: { type: string, enum: [viewer, editor] }
+
+  /sets/{id}/access/users:
+    post:
+      tags: 
+        - Access
+      summary: Invite user to Set 
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, permission]
+              properties:
+                email: { type: string }
+                permission: { type: string, enum: [viewer, editor] }
+      responses:
+        '200':
+          description: Invitation sent/Access granted
