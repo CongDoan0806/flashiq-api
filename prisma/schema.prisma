@@ -22,6 +22,7 @@ model User {
   googleId          String?
   FCMToken          FCMToken[]
   refreshToken      RefreshToken[]
+  fcmTokens         FCMToken[]
   Set               Set[]
   studyRecords      StudyRecord[]
   Access            Access[]
