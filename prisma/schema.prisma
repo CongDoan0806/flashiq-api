@@ -13,8 +13,6 @@ model User {
   email             String         @unique
   password          String?
   salt              String?
-  password          String?
-  salt              String?
   avatar            String?
   isEmailVerified   Boolean        @default(false)
   emailVerifyToken  String?        @unique
@@ -72,11 +70,11 @@ model StudyRecord {
   userId        String
   cardId        String
   setId         String
-  setId         String
   score         Float     @default(0)
   last_reviewed DateTime?
   card          Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   set           Set       @relation(fields: [setId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, cardId])
 }

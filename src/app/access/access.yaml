@@ -1,54 +1,49 @@
-  paths:
-    /access/set/{id}:
-      get:
-        tags: 
-          - Access
-        summary: Get access list for a Set
-        security: [{ bearerAuth: [] }]
-        parameters:
-          - in: path
-            name: id
-            required: true
-            schema: { type: string }
-        responses:
-          '200':
-            description: List of users with access
-            content:
-              application/json:
-                schema:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                        user_id: { type: string }
-                        permission: { type: string, enum: [viewer, editor] }
-
-    /access:
-      post:
-        tags: 
-          - Access
-        summary: Invite user to Set 
-        security: [{ bearerAuth: [] }]
-        parameters:
-          - in: path
-            name: id
-            required: true
-            schema: { type: string }
-        requestBody:
+paths:
+  /access/set/{id}:
+    get:
+      tags:
+        - Access
+      summary: Get access list for a Set
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+          description: "ID của bộ thẻ (setId)"
+      responses:
+        '200':
+          description: Trả về danh sách người được share kèm Access ID để xóa khi cần
           content:
             application/json:
-              schema:
-                type: object
-                required: [email, permission]
-                properties:
-                  email: { type: string }
-                  permission: { type: string, enum: [viewer, editor] }
-        responses:
-          '200':
-            description: Invitation sent/Access granted
+              example:
+                - id: "access-uuid-123"
+                  permission: "VIEW"
+                  user: { username: "nguyenvana", email: "vana@gmail.com", avatar: "link..." }
 
-    /access/{accessId}:
-      delete:
+  /access:
+    post:
+      tags: 
+        - Access
+      summary: Share Set with another user via Email
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [setId, email, permission]
+              properties:
+                setId: { type: string }
+                email: { type: string }
+                permission: { type: string, enum: [VIEW, EDIT, ADMIN] }
+      responses:
+        '200':
+          description: Cấp quyền thành công
+
+  /access/{accessId}:
+    delete:
       tags: 
         - Access
       summary: Revoke access from a user
@@ -58,11 +53,7 @@
           name: accessId
           required: true
           schema: { type: string }
-          description: The unique ID of the access record
+          description: "ID duy nhất của bản ghi Access (Lấy từ API GET ở trên)"
       responses:
         '200':
-          description: Access revoked successfully
-        '403':
-          description: Only the owner can revoke access
-        '404':
-          description: Access record not found
+          description: Thu hồi quyền thành công
