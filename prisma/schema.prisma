@@ -13,6 +13,8 @@ model User {
   email             String         @unique
   password          String?
   salt              String?
+  password          String?
+  salt              String?
   avatar            String?
   isEmailVerified   Boolean        @default(false)
   emailVerifyToken  String?        @unique
@@ -20,24 +22,27 @@ model User {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   googleId          String?
+  FCMToken          FCMToken[]
   refreshToken      RefreshToken[]
   Set               Set[]
   studyRecords      StudyRecord[]
+  Access            Access[]
 }
 
 model Set {
-  id           String        @id @default(uuid())
-  title        String
-  description  String?
-  ownerId      String
-  isPublic     Boolean       @default(false)
-  viewCount    Int           @default(0)
-  cloneCount   Int           @default(0)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  cards        Card[]
-  User         User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  studyRecords StudyRecord[]
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  ownerId     String
+  isPublic    Boolean  @default(false)
+  viewCount   Int      @default(0)
+  cloneCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cards       Card[]
+  User        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  studyRecords  StudyRecord[]
+  Access      Access[]
 }
 
 model RefreshToken {
@@ -67,13 +72,23 @@ model StudyRecord {
   userId        String
   cardId        String
   setId         String
+  setId         String
   score         Float     @default(0)
   last_reviewed DateTime?
   card          Card      @relation(fields: [cardId], references: [id], onDelete: Cascade)
   set           Set       @relation(fields: [setId], references: [id], onDelete: Cascade)
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, cardId])
+}
+
+model FCMToken {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Permission {
@@ -91,4 +106,3 @@ model Access {
 
   @@unique([setId, userId])
 }
-
