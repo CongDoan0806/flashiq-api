@@ -1,0 +1,70 @@
+paths:
+  /{id}/generate-story:
+    post:
+      tags:
+        - AI Tools
+      summary: Generate story using vocabulary from flashcard set
+      description: Creates a story using all vocabulary words from a specific flashcard set with customizable length and style
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Flashcard set ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - storyLength
+                - style
+              properties:
+                storyLength:
+                  type: integer
+                  description: Approximate number of words for the story
+                  example: 150
+                style:
+                  type: string
+                  description: Style of the story
+                  example: "adventure"
+      responses:
+        200:
+          description: Story generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Story generated successfully"
+                  data:
+                    type: object
+                    properties:
+                      story:
+                        type: string
+                        example: "Once upon a time, there was a **brave** knight who went on an **adventure**..."
+        400:
+          description: Bad request - Cards do not exist for this set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Cards do not exist for this set"]

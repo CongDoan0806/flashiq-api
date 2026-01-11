@@ -21,6 +21,8 @@ export const getMultipleChoiceQuestions = async (setId: string) => {
     const quiz = new Quiz(
       card.id,
       card.term,
+      card.example ?? null,
+      card.image_url ?? null,
       choices,
       hashValue(correctAnswer)
     );
@@ -48,6 +50,8 @@ export const getTrueFalseQuestions = async (setId: string) => {
     const quiz = new Quiz(
       card.id,
       card.term,
+      card.example ?? null,
+      card.image_url ?? null,
       choices,
       hashValue(card.definition)
     );
@@ -60,7 +64,14 @@ export const getFillBlankQuestions = async (setId: string) => {
   let cards: Card[] = await getCardBySetId(setId);
   const quizzes: Quiz[] = [];
   cards.forEach((card) => {
-    const quiz = new Quiz(card.id, card.term, null, hashValue(card.definition));
+    const quiz = new Quiz(
+      card.id,
+      card.term,
+      card.example ?? null,
+      card.image_url ?? null,
+      null,
+      hashValue(card.definition.trim())
+    );
     quizzes.push(quiz);
   });
   return shuffle(quizzes);

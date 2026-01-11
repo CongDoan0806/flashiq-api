@@ -11,6 +11,7 @@ import {
   updateScore,
 } from './study_record.repository';
 import { BaseException } from '../../errors/BaseException';
+import dayjs from 'dayjs';
 
 export const getStudyRecordspProgress = async (
   userId: string,
@@ -76,4 +77,34 @@ export const updateStudyRecordScore = async (
       error.message || 'Internal server error'
     );
   }
+};
+
+export const calculateNewScore = (
+  lastStudyDate: Date,
+  currentScore: number
+) => {
+  const today = dayjs();
+  const reviewDate = dayjs(lastStudyDate);
+  const daysDiff = today.diff(reviewDate, 'day');
+
+  if (daysDiff < 2) return currentScore;
+
+  let decayAmount = 0;
+
+  if (currentScore >= 0.8) {
+    if (daysDiff % 7 === 0) {
+      decayAmount = 0.1;
+    }
+  } else if (currentScore >= 0.5) {
+    if (daysDiff % 3 === 0) {
+      decayAmount = 0.1;
+    }
+  } else {
+    decayAmount = 0.1;
+  }
+
+  let newScore = currentScore - decayAmount;
+
+  newScore = Math.round(newScore * 100) / 100;
+  return newScore < 0 ? 0 : newScore;
 };
