@@ -3,10 +3,17 @@ import { SetController } from '../app/sets/set.controller';
 import { getCurrentUser } from '../app/users/user.controller';
 import { authenticateAccessToken } from '../middlewares/auth.middleware';
 import { registerFCMToken } from '../app/notifications/notification.controller';
+import { validate } from '../middlewares/validate.middleware';
+import { userParamsSchema } from '../validations/user.schema';
 
 const router = Router();
 
 router.get('/:userId/sets', SetController.getSetByUser);
+router.get(
+  '/:userId/shared-sets',
+  validate(userParamsSchema, 'params'),
+  SetController.getSharedSets
+);
 router.get('/me', authenticateAccessToken, getCurrentUser);
 router.post('/fcm-token', authenticateAccessToken, registerFCMToken);
 

@@ -139,4 +139,26 @@ export const SetRepository = {
       totalPages: Math.ceil(totalItems / limit),
     };
   },
+
+  async findSharedWithUser(userId: string) {
+    console.log('User id ', userId);
+    try {
+      const sets = await prisma.set.findMany({
+        where: {
+          Access: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      return sets;
+    } catch {
+      console.error('Error retrieving shared sets');
+      const err: any = new Error('Unable to retrieve shared sets');
+      err.status = 500;
+      throw err;
+    }
+  },
 };

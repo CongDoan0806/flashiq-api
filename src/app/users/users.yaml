@@ -60,3 +60,35 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Set'
+
+  /users/{userId}/shared-sets:
+    get:
+      tags:
+        - Users
+      summary: Get Sets shared with a user
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: ID of the user whose shared sets are requested
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shared sets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shared sets retrieved successfully
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Set'
+        '400':
+          description: Invalid userId
+        '404':
+          description: User not found

@@ -2,6 +2,7 @@ import { BaseSuccessResponse } from '../../dto/SuccessResponse';
 import { BaseException } from '../../errors/BaseException';
 import { CreateSetDto } from './set.dto';
 import { SetRepository } from './set.repository';
+import { getUserById } from '../auth/auth.service';
 
 export const SetService = {
   async createSet(data: CreateSetDto) {
@@ -161,6 +162,26 @@ export const SetService = {
       throw new BaseException(
         error?.status || 500,
         'Failed to retrieve trending sets'
+      );
+    }
+  },
+
+  async findSharedWithUser(userId: string) {
+    try {
+      const user = await getUserById(userId);
+      if (!user) {
+        throw new BaseException(404, 'User not found');
+      }
+
+      const sets = await SetRepository.findSharedWithUser(userId);
+      return sets;
+    } catch (error: any) {
+      if (error instanceof BaseException) {
+        throw error;
+      }
+      throw new BaseException(
+        error?.status || 500,
+        error?.message || 'Internal server error'
       );
     }
   },
