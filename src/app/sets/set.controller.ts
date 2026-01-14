@@ -108,4 +108,23 @@ export const SetController = {
       return res.status(err.status || 500).json({ message: err.message });
     }
   },
+
+  async getSharedSets(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+
+      const token = getAccessTokenFromHeader(req);
+      const payload = extractPayloadFromAccessToken(token);
+      const currentUserId = payload.id;
+
+      const sets = await SetService.findSharedWithUser(userId, currentUserId);
+
+      return res
+        .status(200)
+        .json({ message: 'Shared sets retrieved successfully', data: sets });
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
+      return res.status(err.status || 500).json({ message: err.message });
+    }
+  },
 };
